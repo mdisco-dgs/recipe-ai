@@ -27,6 +27,9 @@ app.use(cors({
 
 app.post('/generate-recipe', async (req, res) => {
   const { ingredients } = req.body;
+
+  console.log(req.body);
+  
   if (!ingredients || ingredients.length === 0) {
     return res.status(400).json({ error: 'Inserisci almeno un ingrediente.' });
   }
