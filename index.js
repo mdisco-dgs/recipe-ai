@@ -29,6 +29,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type'],
 }));
 
+app.options('*', cors()); 
+
 // ✅ TUTTO il resto dopo
 app.post('/generate-recipe', async (req, res) => {
   const { ingredients } = req.body;
