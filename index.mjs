@@ -45,7 +45,7 @@ Per ciascuna ricetta, includi:
 - Elenco degli ingredienti
 - Istruzioni
 
-Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi in italiano rispondi in json`;
+Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi in italiano`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -61,8 +61,6 @@ Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi 
         max_tokens: 1500,
       }),
     });
-
-    
 
     const data = await response.json();
     console.log('Risposta Groq:', data);
