@@ -2,6 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import fetch from 'node-fetch';
+import cors from 'cors';
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://tuo-frontend.vercel.app', // se lo pubblicherai su Vercel o Netlify
+];
+
+
+
 
 dotenv.config();
 
@@ -14,11 +23,25 @@ app.use(cors());
 app.use(express.json());
 
 
+
+
 app.post('/generate-recipe', async (req, res) => {
   const { ingredients } = req.body;
   if (!ingredients || ingredients.length === 0) {
     return res.status(400).json({ error: 'Inserisci almeno un ingrediente.' });
   }
+  app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error('Not allowed by CORS'));
+      }
+    },
+  }));
 
 const prompt = `Suggerisci almeno 3 ricette creative e gustose che utilizzano questi ingredienti: ${ingredients.join(', ')}. 
 Per ciascuna ricetta, includi: 
