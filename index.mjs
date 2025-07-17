@@ -41,7 +41,6 @@ app.post('/generate-recipe', async (req, res) => {
   const prompt = `Suggerisci un pò di ricette creative e gustose che utilizzano questi ingredienti: ${ingredients.join(', ')}. 
 Per ciascuna ricetta, includi: 
 - Titolo
-- link foto della ricetta
 - Elenco degli ingredienti
 - Istruzioni
 
