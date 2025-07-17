@@ -43,7 +43,6 @@ Per ciascuna ricetta, includi:
 - Titolo
 - Elenco degli ingredienti
 - Istruzioni
-- link della ricetta
 
 Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi in italiano`;
 
