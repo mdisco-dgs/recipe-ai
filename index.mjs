@@ -3,50 +3,42 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import fetch from 'node-fetch';
 
+dotenv.config();
+
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://tuo-frontend.vercel.app', // se lo pubblicherai su Vercel o Netlify
+  'https://tuo-frontend.vercel.app', // frontend autorizzati
 ];
-
-
-
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
 console.log('GROQ_API_KEY:', process.env.GROQ_API_KEY ? '***' : 'NON TROVATA');
 
-
+// Middleware globali
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://tuo-frontend.vercel.app'], // metti qui i domini frontend autorizzati
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // richieste senza origin (curl, app native)
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
 
+app.use(express.json()); // <--- importante per parsare il body JSON
 
 app.post('/generate-recipe', async (req, res) => {
   const { ingredients } = req.body;
+  console.log('req.body:', req.body);
 
-  console.log(req.body);
-  
   if (!ingredients || ingredients.length === 0) {
     return res.status(400).json({ error: 'Inserisci almeno un ingrediente.' });
   }
-  app.use(
-  cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error('Not allowed by CORS'));
-      }
-    },
-  }));
 
-const prompt = `Suggerisci almeno 3 ricette creative e gustose che utilizzano questi ingredienti: ${ingredients.join(', ')}. 
+  const prompt = `Suggerisci almeno 3 ricette creative e gustose che utilizzano questi ingredienti: ${ingredients.join(', ')}. 
 Per ciascuna ricetta, includi: 
 - Titolo
 - Elenco degli ingredienti
@@ -69,13 +61,14 @@ Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi 
       }),
     });
 
-const data = await response.json();
-console.log('Risposta Groq:', data);
-   if (data.choices && data.choices.length > 0) {
-  const rawText = data.choices[0].message.content.trim();
-  const recipes = rawText.split(/(?=Ricetta \d+:)/g).map(r => r.trim()).filter(Boolean);
-  res.json({ recipes });}
-else {
+    const data = await response.json();
+    console.log('Risposta Groq:', data);
+
+    if (data.choices && data.choices.length > 0) {
+      const rawText = data.choices[0].message.content.trim();
+      const recipes = rawText.split(/(?=Ricetta \d+:)/g).map(r => r.trim()).filter(Boolean);
+      res.json({ recipes });
+    } else {
       res.status(500).json({ error: 'Errore nella risposta di Groq.' });
     }
   } catch (err) {
