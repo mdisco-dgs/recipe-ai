@@ -44,7 +44,7 @@ Per ciascuna ricetta, includi:
 - Elenco degli ingredienti
 - Istruzioni
 
-Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi in italiano`;
+Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi in italiano dammi una risposta in json`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
