@@ -38,11 +38,12 @@ app.post('/generate-recipe', async (req, res) => {
     return res.status(400).json({ error: 'Inserisci almeno un ingrediente.' });
   }
 
-  const prompt = `Suggerisci almeno 3 ricette creative e gustose che utilizzano questi ingredienti: ${ingredients.join(', ')}. 
+  const prompt = `Suggerisci un pò di ricette creative e gustose che utilizzano questi ingredienti: ${ingredients.join(', ')}. 
 Per ciascuna ricetta, includi: 
 - Titolo
 - Elenco degli ingredienti
 - Istruzioni
+- link della ricetta
 
 Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi in italiano`;
 
