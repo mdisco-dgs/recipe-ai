@@ -18,10 +18,11 @@ const PORT = process.env.PORT || 3001;
 console.log('GROQ_API_KEY:', process.env.GROQ_API_KEY ? '***' : 'NON TROVATA');
 
 
-app.use(cors());
-app.use(express.json());
-
-
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://tuo-frontend.vercel.app'], // metti qui i domini frontend autorizzati
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+}));
 
 
 app.post('/generate-recipe', async (req, res) => {
