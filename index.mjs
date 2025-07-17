@@ -7,18 +7,19 @@ dotenv.config();
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://tuo-frontend.vercel.app', // cambia con il tuo dominio frontend in produzione
+  'https://tuo-frontend.vercel.app', // frontend autorizzati
 ];
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-console.log('🔑 GROQ_API_KEY:', process.env.GROQ_API_KEY ? 'TROVATA' : 'NON TROVATA');
+console.log('GROQ_API_KEY:', process.env.GROQ_API_KEY ? '***' : 'NON TROVATA');
 
-// Middleware CORS
+// Middleware globali
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) return callback(null, true); // richieste senza origin (curl, app native)
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     return callback(new Error('Not allowed by CORS'));
@@ -27,25 +28,24 @@ app.use(cors({
   allowedHeaders: ['Content-Type'],
 }));
 
-app.use(express.json()); // Per leggere JSON nel body
+app.use(express.json()); // <--- importante per parsare il body JSON
 
 app.post('/generate-recipe', async (req, res) => {
   const { ingredients } = req.body;
-  console.log('📥 Richiesta con ingredienti:', ingredients);
+  console.log('req.body:', req.body);
 
-  if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
-    return res.status(400).json({ error: 'Inserisci almeno un ingrediente valido.' });
+  if (!ingredients || ingredients.length === 0) {
+    return res.status(400).json({ error: 'Inserisci almeno un ingrediente.' });
   }
 
-  const prompt = `
-Suggerisci 3 ricette creative e gustose che utilizzano questi ingredienti: ${ingredients.join(', ')}.
-Per ciascuna ricetta includi:
-- Titolo (come chiave dell'oggetto)
-- URL foto
-- Ingredienti (array)
-- Istruzioni (array)
-Rispondi **solo** con un oggetto JSON, senza testo introduttivo né blocchi markdown.
-`;
+  const prompt = `Suggerisci un pò di ricette creative e gustose che utilizzano questi ingredienti: ${ingredients.join(', ')}. 
+Per ciascuna ricetta, includi: 
+- Titolo
+- link foto della ricetta
+- Elenco degli ingredienti
+- Istruzioni
+
+Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi in italiano rispondi in json`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -62,38 +62,21 @@ Rispondi **solo** con un oggetto JSON, senza testo introduttivo né blocchi mark
       }),
     });
 
+    
+
     const data = await response.json();
-    console.log('🧠 Risposta Groq ricevuta');
+    console.log('Risposta Groq:', data);
 
     if (data.choices && data.choices.length > 0) {
-      let rawText = data.choices[0].message.content.trim();
-
-      // Rimuove blocchi markdown ```json ... ```
-      rawText = rawText.replace(/^```json|```$/g, "").trim();
-
-      try {
-        const parsed = JSON.parse(rawText); // Oggetto con chiavi "Ricetta 1: Titolo"
-
-        // Trasforma in array strutturato
-        const recipesArray = Object.entries(parsed).map(([title, content]) => ({
-          title: title.replace(/^Ricetta\s*\d+:\s*/i, "").trim(),
-          foto: content.foto,
-          ingredienti: content.ingredienti,
-          istruzioni: content.istruzioni,
-        }));
-
-        return res.json({ recipes: recipesArray });
-      } catch (parseError) {
-        console.error("❌ Errore nel parsing JSON:", parseError);
-        console.log("🔎 Contenuto ricevuto:\n", rawText);
-        return res.status(500).json({ error: 'Formato JSON non valido nella risposta del modello.' });
-      }
+      const rawText = data.choices[0].message.content.trim();
+      const recipes = rawText.split(/(?=Ricetta \d+:)/g).map(r => r.trim()).filter(Boolean);
+      res.json({ recipes });
     } else {
-      return res.status(500).json({ error: 'Nessuna scelta valida nella risposta del modello.' });
+      res.status(500).json({ error: 'Errore nella risposta di Groq.' });
     }
   } catch (err) {
-    console.error('❌ Errore durante la richiesta a Groq:', err);
-    return res.status(500).json({ error: 'Errore durante la generazione della ricetta.' });
+    console.error('Errore Groq:', err);
+    res.status(500).json({ error: 'Errore nella generazione della ricetta.' });
   }
 });
 
