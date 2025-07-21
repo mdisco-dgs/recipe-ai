@@ -68,7 +68,7 @@ Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi 
     if (data.choices && data.choices.length > 0) {
       const rawText = data.choices[0].message.content.trim();
       const recipes = rawText.split(/(?=Ricetta \d+:)/g).map(r => r.trim()).filter(Boolean);
-      res.json({ recipes });
+      res.json(response );
     } else {
       res.status(500).json({ error: 'Errore nella risposta di Groq.' });
     }
