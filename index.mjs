@@ -41,10 +41,11 @@ app.post('/generate-recipe', async (req, res) => {
   const prompt = `Suggerisci un pò di ricette creative e gustose che utilizzano questi ingredienti: ${ingredients.join(', ')}. 
 Per ciascuna ricetta, includi: 
 - Titolo
+- Foto
 - Elenco degli ingredienti
 - Istruzioni
 
-Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi in italiano`;
+Formatta ogni ricetta iniziando con "Ricetta 1:", "Ricetta 2:", ecc. e rispondi con un JSON in italiano, se possibile prendi le ricette da GialloZafferano`;
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
